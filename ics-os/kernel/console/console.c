@@ -26,6 +26,7 @@
 */
 
 #include "console.h"
+#include "history.c"
 
 void runner(){
    int i=0;
@@ -947,17 +948,17 @@ void console_main(){
    do{
       textcolor(WHITE);
       textbackground(BLACK);
+      initialize_list();
       prompt_parser(console_fmt,console_prompt);
-    
       textcolor(LIGHTBLUE);
       printf("%s",console_prompt);
       textcolor(WHITE);
-    
+      
       if (strcmp(s,"@@")!=0 && strcmp(s,"!!")!=0)
-         strcpy(last,s);
-    
+      strcpy(last,s);
+      
       getstring(s, myddl);
-   
+      insert_at_tail(create_command_node(s));
       if (strcmp(s,"!")==0){
          sendtokeyb(last,&_q);
       }
