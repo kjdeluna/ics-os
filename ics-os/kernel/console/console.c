@@ -897,11 +897,27 @@ int console_execute(const char *str){
       }
    }
    // -----------------------------------------------------------------------
+   // TODO: Implement history command
       /* Append here the console commands you made */
    else if(strcmp(u, "history") == 0) {
-         print_list();
-   }
+      //    print_list();
+      char v[20];
+      u = strtok(0, " ");
+      if(u != 0) {
+            do {
+                  strcpy(v, u);
+                  if(strcmp(v, "-c") == 0) clear_cmd_list(); 
+                  // Insert else ifs single tokenize instructions here
 
+                  // If it cannot be deciphred read character one by one (aggregate)
+                  u=strtok(0," ");
+            } while(u != 0);
+      }
+      // If it cannot be tokenize anymore, then it is a normal _history command
+      else {
+            print_cmd_list();
+      }
+   }
    // -----------------------------------------------------------------------
    else
    if (u[0] == '$'){                      //-- Sends message to a device.
