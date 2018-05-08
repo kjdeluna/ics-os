@@ -62,9 +62,32 @@ void getstring(char *buf, DEX32_DDL_INFO *dev){
          };
       }else{
          if (i<256){  //maximum command line is only 255 characters
-            Dex32PutChar(dev,Dex32GetX(dev),Dex32GetY(dev),buf[i]=c,Dex32GetAttb(dev));
-            i++;
-            Dex32SetX(dev,Dex32GetX(dev)+1);     
+            switch((int) c) {
+                  case 9:
+                        // TAB -> autocomplete
+                        printf("Autocomplete\n");
+                        break;
+                  case -103:
+                        // RIGHT -> move the cursor to the right
+                        printf("Right\n");
+                        break;
+                  case -104:
+                        // DOWN -> go the next command
+                        printf("Down\n");
+                        break;
+                  case -105:
+                        // UP -> go to previous entered command
+                        printf("Up\n");
+                        break;
+                  case -106:
+                        // LEFT -> move the cursor to the left
+                        printf("Left\n");
+                        break;
+                  default:
+                        Dex32PutChar(dev,Dex32GetX(dev),Dex32GetY(dev),buf[i]=c,Dex32GetAttb(dev));
+                        i++;
+                        Dex32SetX(dev,Dex32GetX(dev)+1);     
+            }
             if (Dex32GetX(dev)>79){
                Dex32SetX(dev,0);
                Dex32NextLn(dev);
