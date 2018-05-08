@@ -4,8 +4,10 @@ typedef struct command_struct {
     struct command_struct *next;
 } COMMAND;
 
+/* Declare global variables here */
 COMMAND *cmd_list_head = NULL;
 COMMAND *cmd_list_tail = NULL;
+int command_list_count = 0;
 
 void insert_at_tail(COMMAND *node) {
     // If command list is still empty
@@ -17,12 +19,16 @@ void insert_at_tail(COMMAND *node) {
         cmd_list_tail -> next = node;
         cmd_list_tail = node;
     }
+    // Increment the command list count
+    command_list_count++;
 }
 
 void print_list() {
+    int n = 0;
     COMMAND *navigator = cmd_list_head;
     while(navigator != NULL) {
-        printf("%s\n", navigator -> command);
+        // Display their corresponding n (based on how they were entered)
+        printf("%d\t\t%s\n", (++n)+1000, navigator -> command);
         navigator = navigator -> next;
     }
     /* Uncomment me to print the list in reverse */
@@ -42,5 +48,5 @@ COMMAND *create_command_node(char *cmd) {
 }
 
 void initialize_list() {
-    print_list();
+    // print_list();
 }

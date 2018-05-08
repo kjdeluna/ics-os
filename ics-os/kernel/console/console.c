@@ -895,7 +895,15 @@ int console_execute(const char *str){
                printf("Usage: cc <name.exe> <name.c>\n");
          }
       }
-   }else
+   }
+   // -----------------------------------------------------------------------
+      /* Append here the console commands you made */
+   else if(strcmp(u, "history") == 0) {
+         print_list();
+   }
+
+   // -----------------------------------------------------------------------
+   else
    if (u[0] == '$'){                      //-- Sends message to a device.
       int i, devid;
       char devicename[255],*cmd;
@@ -971,7 +979,8 @@ void console_main(){
    do{
       textcolor(WHITE);
       textbackground(BLACK);
-      initialize_list();
+      /* Load the file here */
+      // initialize_list();
       prompt_parser(console_fmt,console_prompt);
       textcolor(LIGHTBLUE);
       printf("%s",console_prompt);
