@@ -14,12 +14,37 @@ typedef struct command_struct {
 COMMAND *cmd_list_head = NULL;
 COMMAND *cmd_list_tail = NULL;
 int command_list_count = 0;
+COMMAND *current_nav_pointer = NULL;
+
+char *get_previous_command() {
+    if(current_nav_pointer != cmd_list_head) {
+        char *str = current_nav_pointer -> command;
+        // printf("%s", str);
+        current_nav_pointer = current_nav_pointer -> prev;
+        return str;     
+    }
+    return current_nav_pointer -> command;
+}
+
+char *get_next_command() {
+    if(current_nav_pointer != cmd_list_tail) {
+        current_nav_pointer = current_nav_pointer -> next;
+        char *str = current_nav_pointer -> command;
+        return str;   
+    }
+    return current_nav_pointer -> command;
+}
+
+void reset_current_nav() {
+    current_nav_pointer = cmd_list_tail;
+}
 
 void insert_at_tail(COMMAND *node) {
     // If command list is still empty
     if(cmd_list_head == NULL) {
         cmd_list_head = node;
         cmd_list_tail = node;
+        current_nav_pointer = cmd_list_tail;
         command_list_count++;
     } else if(strcmp(cmd_list_tail -> command, node -> command) == 0){
         // If command list is not empty, compare the new node to prev command
@@ -28,6 +53,7 @@ void insert_at_tail(COMMAND *node) {
         node -> prev = cmd_list_tail;
         cmd_list_tail -> next = node;
         cmd_list_tail = node;
+        current_nav_pointer = cmd_list_tail;
         // Increment the command list count
         command_list_count++;
     }
@@ -46,6 +72,7 @@ void clear_cmd_list() {
     // Reset all variables
     cmd_list_head = NULL;
     cmd_list_tail = NULL;
+    current_nav_pointer = NULL;
     command_list_count = 0;
 }
 

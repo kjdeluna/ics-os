@@ -28,6 +28,32 @@
 #include "console.h"
 #include "history.c"
 
+
+// Insert helper functions here ------------------------
+void change_word_being_typed(char *buf, int *buf_length, char *changed_command, DEX32_DDL_INFO *dev) {
+      // printf("%s\n",changed_command);
+      int i;
+      int changed_command_length = strlen(changed_command);
+      // Dex32SetX(dev,9);
+      for(i = 0; i < *buf_length; i++) {
+            Dex32PutChar(dev,Dex32GetX(dev),Dex32GetY(dev),' ',Dex32GetAttb(dev));
+            Dex32SetX(dev,Dex32GetX(dev)-1);
+      }
+      for(i = 0; i < changed_command_length; i++) {
+            Dex32PutChar(dev,Dex32GetX(dev),Dex32GetY(dev),changed_command[i],Dex32GetAttb(dev));   
+            Dex32SetX(dev,Dex32GetX(dev)+1);          
+      }
+      strcpy(buf, changed_command);
+      *buf_length = changed_command_length;
+      update_cursor(Dex32GetY(dev),Dex32GetX(dev));
+}
+
+
+
+
+
+// -----------------------------------------------------
+
 void runner(){
    int i=0;
    while(1){
@@ -65,23 +91,25 @@ void getstring(char *buf, DEX32_DDL_INFO *dev){
             switch((int) c) {
                   case 9:
                         // TAB -> autocomplete
-                        printf("Autocomplete\n");
+                        // printf("Autocomplete\n");
                         break;
                   case -103:
                         // RIGHT -> move the cursor to the right
-                        printf("Right\n");
+                        // printf("Right\n");
                         break;
                   case -104:
                         // DOWN -> go the next command
-                        printf("Down\n");
+                        // printf("Down\n");
+                        change_word_being_typed(buf, &i, get_next_command(), dev);
                         break;
                   case -105:
                         // UP -> go to previous entered command
-                        printf("Up\n");
+                        change_word_being_typed(buf, &i, get_previous_command(), dev);
+                        // printf("Up\n");
                         break;
                   case -106:
                         // LEFT -> move the cursor to the left
-                        printf("Left\n");
+                        // printf("Left\n");
                         break;
                   default:
                         Dex32PutChar(dev,Dex32GetX(dev),Dex32GetY(dev),buf[i]=c,Dex32GetAttb(dev));
@@ -102,6 +130,8 @@ void getstring(char *buf, DEX32_DDL_INFO *dev){
    Dex32SetX(dev,0);
    Dex32NextLn(dev);
    buf[i]=0;
+   // Put the current navigation pointer to the end of  the list
+   reset_current_nav();
 };
 
 /*Show information about memory usage. This function is also useful
