@@ -28,28 +28,115 @@
 #include "console.h"
 #include "history.c"
 
-
-// Insert helper functions here ------------------------
-void change_word_being_typed(char *buf, int *buf_length, char *changed_command, DEX32_DDL_INFO *dev) {
-      // printf("%s\n",changed_command);
+void clear_console_input(int buf_length, DEX32_DDL_INFO *dev) {
       int i;
-      int changed_command_length = strlen(changed_command);
-      // Dex32SetX(dev,9);
-      for(i = 0; i < *buf_length; i++) {
+      for(i = 0; i < buf_length; i++) {
             Dex32PutChar(dev,Dex32GetX(dev),Dex32GetY(dev),' ',Dex32GetAttb(dev));
             Dex32SetX(dev,Dex32GetX(dev)-1);
       }
-      for(i = 0; i < changed_command_length; i++) {
-            Dex32PutChar(dev,Dex32GetX(dev),Dex32GetY(dev),changed_command[i],Dex32GetAttb(dev));   
-            Dex32SetX(dev,Dex32GetX(dev)+1);          
-      }
-      strcpy(buf, changed_command);
-      *buf_length = changed_command_length;
-      update_cursor(Dex32GetY(dev),Dex32GetX(dev));
 }
 
+void put_into_console(char *command, int command_length, DEX32_DDL_INFO *dev) {
+      int i;
+      for(i = 0; i < command_length; i++) {
+            Dex32PutChar(dev,Dex32GetX(dev),Dex32GetY(dev),command[i],Dex32GetAttb(dev));   
+            Dex32SetX(dev,Dex32GetX(dev)+1);          
+      }
+      update_cursor(Dex32GetY(dev),Dex32GetX(dev));      
+}
+// Insert helper functions here ------------------------
+void change_word_being_typed(char *buf, int *buf_length, char *changed_command, DEX32_DDL_INFO *dev) {
+      // printf("%s\n",changed_command);
+      int changed_command_length = strlen(changed_command);
+      clear_console_input(*buf_length, dev);
+      // for(i = 0; i < changed_command_length; i++) {
+      //       Dex32PutChar(dev,Dex32GetX(dev),Dex32GetY(dev),changed_command[i],Dex32GetAttb(dev));   
+      //       Dex32SetX(dev,Dex32GetX(dev)+1);          
+      // }
+      put_into_console(changed_command, changed_command_length, dev);
+      // Replace the buffer to ensure that correct operation will be done if entered
+      strcpy(buf, changed_command);
+      *buf_length = changed_command_length;
+}
 
-
+void *get_array_of_commands(char *commands[]) {
+      // Build commands array alphabetically for more optimized str comparison
+      commands[0] = "cat";
+      commands[1] = "cd";
+      commands[2] = "clear";
+      commands[3] = "cls";
+      commands[4] = "copy";
+      commands[5] = "cp";
+      commands[6] = "cpuid";
+      commands[7] = "del";
+      commands[8] = "dkill";
+      commands[9] = "demo_graphics";
+      commands[10] = "dir";
+      commands[11] = "echo";
+      commands[12] = "exit";
+      commands[13] = "files";
+      commands[14] = "find";
+      commands[15] = "fgman";
+      commands[16] = "help";
+      commands[17] = "history";
+      commands[18] = "kill";
+      commands[19] = "libinfo";
+      commands[20] = "loadmod";
+      commands[21] = "ls";
+      commands[22] = "lsdev";
+      commands[23] = "lsext";
+      commands[24] = "lsmod";
+      commands[25] = "lspcut";
+      commands[26] = "mem";
+      commands[27] = "meminfo";
+      commands[28] = "mkdir";
+      commands[29] = "mount";
+      commands[30] = "mouse";
+      commands[31] = "newconsole";
+      commands[32] = "off";
+      commands[33] = "pause";
+      commands[34] = "pcut"; 
+      commands[35] = "procinfo";
+      commands[36] = "procs";
+      commands[37] = "ps";
+      commands[38] = "pwd";
+      commands[39] = "rempcut";
+      commands[40] = "ren";
+      commands[41] = "run";
+      commands[42] = "rmdir";
+      commands[43] = "set";
+      commands[44] = "shutdown";
+      commands[45] = "time";
+      commands[46] = "type";
+      commands[47] = "umount";
+      commands[48] = "unload";
+      commands[49] = "use";
+      commands[50] = "ver";
+}
+// TODO: Eating percentage 
+void *get_autocomplete_word (char *buf, int *buf_length, DEX32_DDL_INFO *dev) {
+      int COMMANDS_LENGTH = 51;
+      int BUFFER_LENGTH = strlen(buf);
+      char *commands[51];
+      char temp_buf[255];
+      get_array_of_commands(commands);
+      // Iterate over the commands
+      for(int i = 0; i < COMMANDS_LENGTH; i++) {
+            if(strlen(commands[i]) > BUFFER_LENGTH) {
+                  // Autocomplete will only work if BUFFER_LENGTH is less than a command length
+                  memcpy(temp_buf, commands[i], BUFFER_LENGTH);
+                  temp_buf[BUFFER_LENGTH] = '\0';
+                  // printf("%s\n", temp_buf);
+                  if(strcmp(temp_buf, buf) == 0) {
+                        clear_console_input(BUFFER_LENGTH, dev);
+                        put_into_console(commands[i], strlen(commands[i]), dev);
+                        strcpy(buf, commands[i]);
+                        *buf_length = strlen(commands[i]);
+                        break;
+                  }
+            }
+      }
+}
 
 
 // -----------------------------------------------------
@@ -67,6 +154,7 @@ void runner(){
 /*A console mode get string function terminates
 upon receving \r */
 void getstring(char *buf, DEX32_DDL_INFO *dev){
+   memset(buf, 0, 255);
    unsigned int i=0;
    char c;
    do{
@@ -76,6 +164,7 @@ void getstring(char *buf, DEX32_DDL_INFO *dev){
 
       if (c=='\b' || (unsigned char)c == 145){
          if(i>0){
+            buf[i] = '\0';
             i--;
             if (Dex32GetX(dev)==0){
                Dex32SetX(dev,79);
@@ -90,6 +179,7 @@ void getstring(char *buf, DEX32_DDL_INFO *dev){
          if (i<256){  //maximum command line is only 255 characters
             switch((int) c) {
                   case 9:
+                        get_autocomplete_word(buf, &i, dev);
                         // TAB -> autocomplete
                         // printf("Autocomplete\n");
                         break;

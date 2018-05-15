@@ -38,7 +38,7 @@ char *get_next_command() {
 void reset_current_nav() {
     current_nav_pointer = cmd_list_tail;
 }
-
+// TODO: ignore `empty` inputs
 void insert_at_tail(COMMAND *node) {
     // If command list is still empty
     if(cmd_list_head == NULL) {
