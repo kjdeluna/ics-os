@@ -127,6 +127,7 @@ void *get_autocomplete_word (char *buf, int *buf_length, DEX32_DDL_INFO *dev) {
       char *last_token = NULL;
       int word_length = 0;
       char *token = strtok(dummy_buf, " ");
+      memset(left_words, 0, 255);
       while(token) {
             word_length++;
             last_token = token;
@@ -145,7 +146,6 @@ void *get_autocomplete_word (char *buf, int *buf_length, DEX32_DDL_INFO *dev) {
                         // Autocomplete will only work if BUFFER_LENGTH is less than a command length
                         memcpy(temp_buf, commands[i], BUFFER_LENGTH);
                         temp_buf[BUFFER_LENGTH] = '\0';
-                        // printf("%s\n", temp_buf);
                         if(strcmp(temp_buf, buf) == 0) {
                               clear_console_input(BUFFER_LENGTH, dev);
                               put_into_console(commands[i], strlen(commands[i]), dev);
@@ -182,7 +182,6 @@ void *get_autocomplete_word (char *buf, int *buf_length, DEX32_DDL_INFO *dev) {
                               left_words[strlen(left_words)] = ' '; 
                               left_words[strlen(left_words)+1] = '\0';
                               strcat(left_words, buffer[i].name);
-                              printf("\n\n\n%s\n\n\n", left_words);
                               strcpy(buf, left_words);
                               *buf_length = strlen(left_words);
                               break;

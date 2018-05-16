@@ -1,6 +1,6 @@
 ICS-OS Commands
 ---------------
-1076:   else if(strcmp(u, "history") == 0) {
+1075:   else if(strcmp(u, "history") == 0) {
 cc- Builds a C program (invokes tcc.exe). Args: <name.exe> <name.c>
 cd- Changes working directory. Args: <directory>
 cls- Clears the screen. 
