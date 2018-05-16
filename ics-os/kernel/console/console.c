@@ -116,23 +116,77 @@ void *get_array_of_commands(char *commands[]) {
 
 void *get_autocomplete_word (char *buf, int *buf_length, DEX32_DDL_INFO *dev) {
       int COMMANDS_LENGTH = 51;
-      int BUFFER_LENGTH = strlen(buf);
       char *commands[51];
       char temp_buf[255];
+      int BUFFER_LENGTH = 0;
+      char left_words[255];
+      // ---------------------------------------
+
+      char dummy_buf[255];
+      strcpy(dummy_buf, buf);
+      char *last_token = NULL;
+      int word_length = 0;
+      char *token = strtok(dummy_buf, " ");
+      while(token) {
+            word_length++;
+            last_token = token;
+            token = strtok(NULL, " ");
+            if(token) strcat(left_words, last_token);
+      }
+
+      // ---------------------------------------
+
       get_array_of_commands(commands);
-      // Iterate over the commands
-      for(int i = 0; i < COMMANDS_LENGTH; i++) {
-            if(strlen(commands[i]) > BUFFER_LENGTH) {
-                  // Autocomplete will only work if BUFFER_LENGTH is less than a command length
-                  memcpy(temp_buf, commands[i], BUFFER_LENGTH);
-                  temp_buf[BUFFER_LENGTH] = '\0';
-                  // printf("%s\n", temp_buf);
-                  if(strcmp(temp_buf, buf) == 0) {
-                        clear_console_input(BUFFER_LENGTH, dev);
-                        put_into_console(commands[i], strlen(commands[i]), dev);
-                        strcpy(buf, commands[i]);
-                        *buf_length = strlen(commands[i]);
-                        break;
+      if(word_length == 1) {
+            BUFFER_LENGTH = strlen(buf);
+            // Iterate over the commands
+            for(int i = 0; i < COMMANDS_LENGTH; i++) {
+                  if(strlen(commands[i]) > BUFFER_LENGTH) {
+                        // Autocomplete will only work if BUFFER_LENGTH is less than a command length
+                        memcpy(temp_buf, commands[i], BUFFER_LENGTH);
+                        temp_buf[BUFFER_LENGTH] = '\0';
+                        // printf("%s\n", temp_buf);
+                        if(strcmp(temp_buf, buf) == 0) {
+                              clear_console_input(BUFFER_LENGTH, dev);
+                              put_into_console(commands[i], strlen(commands[i]), dev);
+                              strcpy(buf, commands[i]);
+                              *buf_length = strlen(commands[i]);
+                              break;
+                        }
+                  }
+            }
+      } else if (word_length >= 2) {
+            BUFFER_LENGTH = strlen(last_token);
+            // Code snippet from Sir Jach:
+            vfs_node *dptr=current_process->workdir;
+            vfs_node *buffer;
+            //obtain total number of files
+            int count_totalfiles = vfs_listdir(dptr, 0, 0);
+            buffer = (vfs_node*) malloc( count_totalfiles * sizeof(vfs_node));
+      
+            //Place the list of files obtained from the VFS into a buffer
+            count_totalfiles = vfs_listdir(dptr, buffer, count_totalfiles * sizeof(vfs_node));     
+             
+            //Sort the list
+            qsort(buffer, count_totalfiles, sizeof(vfs_node), console_ls_sortname);
+            // Iterate over the files
+            char filename[255];
+            for(int i = 0; i < count_totalfiles; i++) {
+                  if(strlen(buffer[i].name) > BUFFER_LENGTH) {
+                        memcpy(temp_buf, buffer[i].name, BUFFER_LENGTH);
+                        temp_buf[BUFFER_LENGTH] = '\0';
+                        if(strcmp(temp_buf, last_token) == 0) {
+                              clear_console_input(BUFFER_LENGTH, dev);
+                              put_into_console(buffer[i].name, strlen(buffer[i].name), dev);
+                              int left_words_length = strlen(left_words);
+                              left_words[strlen(left_words)] = ' '; 
+                              left_words[strlen(left_words)+1] = '\0';
+                              strcat(left_words, buffer[i].name);
+                              printf("\n\n\n%s\n\n\n", left_words);
+                              strcpy(buf, left_words);
+                              *buf_length = strlen(left_words);
+                              break;
+                        }
                   }
             }
       }
@@ -161,7 +215,7 @@ void getstring(char *buf, DEX32_DDL_INFO *dev){
    do{
       c=getch();
       if (c=='\r' || c=='\n' || c==0xa) 
-         break;
+            break;
 
       if (c=='\b' || (unsigned char)c == 145){
          if(i>0){
@@ -217,7 +271,6 @@ void getstring(char *buf, DEX32_DDL_INFO *dev){
       Dex32PutChar(dev,Dex32GetX(dev),Dex32GetY(dev),' ',Dex32GetAttb(dev));
       update_cursor(Dex32GetY(dev),Dex32GetX(dev));
    }while (c!='\r');
-    
    Dex32SetX(dev,0);
    Dex32NextLn(dev);
    buf[i]=0;
