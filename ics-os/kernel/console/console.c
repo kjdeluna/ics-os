@@ -122,9 +122,11 @@ void *get_autocomplete_word (char *buf, int *buf_length, DEX32_DDL_INFO *dev) {
       char left_words[255];
       // ---------------------------------------
 
-      char dummy_buf[255];
-      strcpy(dummy_buf, buf);
       char *last_token = NULL;
+      char dummy_buf[255];
+      memset(dummy_buf, 0, 255);
+      memset(temp_buf,0,255);
+      strcpy(dummy_buf, buf);
       int word_length = 0;
       char *token = strtok(dummy_buf, " ");
       memset(left_words, 0, 255);
@@ -132,7 +134,11 @@ void *get_autocomplete_word (char *buf, int *buf_length, DEX32_DDL_INFO *dev) {
             word_length++;
             last_token = token;
             token = strtok(NULL, " ");
-            if(token) strcat(left_words, last_token);
+            if(token) {
+                  strcat(left_words, last_token);
+                  left_words[strlen(left_words)] = ' '; 
+                  left_words[strlen(left_words)+1] = '\0';
+            }
       }
 
       // ---------------------------------------
@@ -155,6 +161,39 @@ void *get_autocomplete_word (char *buf, int *buf_length, DEX32_DDL_INFO *dev) {
                         }
                   }
             }
+            BUFFER_LENGTH = strlen(last_token);
+            // Code snippet from Sir Jach:
+            vfs_node *dptr=current_process->workdir;
+            vfs_node *buffer;
+            //obtain total number of files
+            int count_totalfiles = vfs_listdir(dptr, 0, 0);
+            buffer = (vfs_node*) malloc( count_totalfiles * sizeof(vfs_node));
+      
+            //Place the list of files obtained from the VFS into a buffer
+            count_totalfiles = vfs_listdir(dptr, buffer, count_totalfiles * sizeof(vfs_node));     
+             
+            //Sort the list
+            qsort(buffer, count_totalfiles, sizeof(vfs_node), console_ls_sortname);
+            // Iterate over the files
+            char filename[255];
+            for(int i = 0; i < count_totalfiles; i++) {
+                  if(strlen(buffer[i].name) > BUFFER_LENGTH) {
+                        memcpy(temp_buf, buffer[i].name, BUFFER_LENGTH);
+                        temp_buf[BUFFER_LENGTH] = '\0';
+                        if(strcmp(temp_buf, last_token) == 0) {
+                              clear_console_input(BUFFER_LENGTH, dev);
+                              put_into_console(buffer[i].name, strlen(buffer[i].name), dev);
+                              strcat(left_words, buffer[i].name);
+                              int left_words_length = strlen(left_words);
+                              left_words[left_words_length] = ' '; 
+                              left_words[left_words_length+1] = '\0';
+                              strcpy(buf, left_words);
+                              *buf_length = strlen(left_words);
+                              break;
+                        }
+                  }
+            }
+
       } else if (word_length >= 2) {
             BUFFER_LENGTH = strlen(last_token);
             // Code snippet from Sir Jach:
@@ -178,12 +217,9 @@ void *get_autocomplete_word (char *buf, int *buf_length, DEX32_DDL_INFO *dev) {
                         if(strcmp(temp_buf, last_token) == 0) {
                               clear_console_input(BUFFER_LENGTH, dev);
                               put_into_console(buffer[i].name, strlen(buffer[i].name), dev);
-                              int left_words_length = strlen(left_words);
-                              left_words[strlen(left_words)] = ' '; 
-                              left_words[strlen(left_words)+1] = '\0';
                               strcat(left_words, buffer[i].name);
                               strcpy(buf, left_words);
-                              *buf_length = strlen(left_words);
+                              *buf_length = strlen(buf);
                               break;
                         }
                   }
@@ -218,8 +254,8 @@ void getstring(char *buf, DEX32_DDL_INFO *dev){
 
       if (c=='\b' || (unsigned char)c == 145){
          if(i>0){
-               i--;
                buf[i] = '\0';
+               i--;
             if (Dex32GetX(dev)==0){
                Dex32SetX(dev,79);
                if (Dex32GetY(dev)>0) 
