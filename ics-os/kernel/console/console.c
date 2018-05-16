@@ -113,7 +113,7 @@ void *get_array_of_commands(char *commands[]) {
       commands[49] = "use";
       commands[50] = "ver";
 }
-// TODO: Eating percentage 
+
 void *get_autocomplete_word (char *buf, int *buf_length, DEX32_DDL_INFO *dev) {
       int COMMANDS_LENGTH = 51;
       int BUFFER_LENGTH = strlen(buf);
@@ -154,6 +154,7 @@ void runner(){
 /*A console mode get string function terminates
 upon receving \r */
 void getstring(char *buf, DEX32_DDL_INFO *dev){
+   // Reset buffer
    memset(buf, 0, 255);
    unsigned int i=0;
    char c;
@@ -164,8 +165,8 @@ void getstring(char *buf, DEX32_DDL_INFO *dev){
 
       if (c=='\b' || (unsigned char)c == 145){
          if(i>0){
-            buf[i] = '\0';
-            i--;
+               i--;
+               buf[i] = '\0';
             if (Dex32GetX(dev)==0){
                Dex32SetX(dev,79);
                if (Dex32GetY(dev)>0) 
