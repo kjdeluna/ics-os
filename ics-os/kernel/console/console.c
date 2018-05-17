@@ -161,7 +161,7 @@ void *get_autocomplete_word (char *buf, int *buf_length, DEX32_DDL_INFO *dev) {
                         }
                   }
             }
-            BUFFER_LENGTH = strlen(last_token);
+            BUFFER_LENGTH = *buf_length;
             // Code snippet from Sir Jach:
             vfs_node *dptr=current_process->workdir;
             vfs_node *buffer;
@@ -184,9 +184,6 @@ void *get_autocomplete_word (char *buf, int *buf_length, DEX32_DDL_INFO *dev) {
                               clear_console_input(BUFFER_LENGTH, dev);
                               put_into_console(buffer[i].name, strlen(buffer[i].name), dev);
                               strcat(left_words, buffer[i].name);
-                              int left_words_length = strlen(left_words);
-                              left_words[left_words_length] = ' '; 
-                              left_words[left_words_length+1] = '\0';
                               strcpy(buf, left_words);
                               *buf_length = strlen(left_words);
                               break;
