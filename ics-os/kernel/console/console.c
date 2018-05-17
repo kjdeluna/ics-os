@@ -1107,6 +1107,7 @@ int console_execute(const char *str){
       /* Append here the console commands you made */
    else if(strcmp(u, "history") == 0) {
       //    print_list();
+      int val;
       char v[20];
       u = strtok(0, " ");
       if(u != 0) {
@@ -1114,7 +1115,20 @@ int console_execute(const char *str){
                   strcpy(v, u);
                   if(strcmp(v, "-c") == 0) clear_cmd_list(); 
                   // Insert else ifs single tokenize instructions here
-
+                  if(strcmp(v, "-d") == 0) {
+                     u = strtok(0," ");
+                     val = atoi(u);
+                     delete_cmd_offset(val);
+                  } if (strcmp(v, "-a") == 0) {
+                     append_history_to_file();
+                  } if (strcmp(v, "-r") == 0) {
+                     get_from_history_file();
+                  } if (strcmp(v, "-w") == 0) {
+                     write_history_to_file();
+                     append_to_history_list();
+                  } if (strcmp(v, "-n") == 0) {
+                     read_lines_not_in_file();
+                 }
                   // If it cannot be deciphred read character one by one (aggregate)
                   u=strtok(0," ");
             } while(u != 0);
